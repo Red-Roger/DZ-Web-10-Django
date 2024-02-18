@@ -20,14 +20,19 @@ conn = psycopg2.connect(path_db)
 div_text = ''
 count_tegs = {}
 
+#загружаємо дані з файлу authors.json. Перевіряємо наявність додаткових даних в БД Postgres. Якщо є нові дані, додаємо
+
 with open(path_a, 'r') as json_file:
     data = json.load(json_file)
     for item in data:
         if not Authors.objects.filter(fullname = item["fullname"]):
             Authors.objects.create (fullname = item["fullname"], born_date = item["born_date"], born_location = item["born_location"], description = item["description"])
+# додаємо в views.py
             with open(path_views, 'a', encoding="utf-8") as file1:
                 file1.write(f"\rdef {item["fullname"].replace(" ","").replace(".","")}(request):\r    return render(request, 'quoteapp/author/{item["fullname"]}.html')\r\r")    
-        
+
+ #формуємо html про автора.
+                       
         path_about = os.getcwd() + f'\\quoteapp\\templates\\quoteapp\\author\\{item["fullname"]}.html'
         about_text = f"<div class=\"author-details\">\r    <h3 class=\"author-title\">{item["fullname"]}</h3>\r"
         about_text += f"    <p><strong>Born:</strong> <span class=\"author-born-date\">{item["born_date"]}</span> <span class=\"author-born-location\">{item["born_location"]}</span></p>\r"
@@ -41,6 +46,8 @@ with open(path_a, 'r') as json_file:
         with open(path_about, 'w',encoding="utf-8") as file1:
             file1.write(data1)
 
+#загружаємо дані з файлу quotes.json. Перевіряємо наявність додаткових даних в БД Postgres. Якщо є нові дані, додаємо
+            
 with open(path_q, 'r') as json_file:
     data = json.load(json_file)
     div_text += "<div class=\"row\">\r    <div class=\"col-md-8\">\r"
@@ -48,7 +55,9 @@ with open(path_q, 'r') as json_file:
         if not Quotes.objects.filter(quote = item["quote"]):
             inst = Authors.objects.get(fullname = item["author"])
             Quotes.objects.create (tags = item["tags"], author = inst, quote = item["quote"])
-        
+ 
+ #формуємо дані для html головної.
+            
         div_text += "\r    <div class=\"quote\" itemscope itemtype=\"http://schema.org/CreativeWork\">\r        <span class=\"text\" itemprop=\"text\">"
         div_text += f"{item["quote"]}</span>"
         div_text += f"\r        <span>by <small class=\"author\" itemprop=\"author\">{item["author"]}</small>"
@@ -71,8 +80,11 @@ with open(path_q, 'r') as json_file:
 conn.commit()
 conn.close()
 
+# сортуємо теги та формуємо частину HTML сторінки під 10 тегів
+
 sorted_tags = dict(sorted(count_tegs.items(), key=itemgetter(1), reverse=True))
 new_data = ""
+
 with open(path_end, 'r') as file1:
     data = file1.read()
     new_data = data[:325]
@@ -87,6 +99,8 @@ with open(path_end, 'r') as file1:
     new_data += f"\r            <span class=\"tag-item\">\r            <a class=\"tag\" style=\"font-size: 8px\" href=\"/tag/{list(sorted_tags)[8]}/\">{list(sorted_tags)[8]}</a>\r            </span>\r"
     new_data += f"\r            <span class=\"tag-item\">\r            <a class=\"tag\" style=\"font-size: 6px\" href=\"/tag/{list(sorted_tags)[9]}/\">{list(sorted_tags)[9]}</a>\r            </span>\r"
     new_data += "    </div>\r</div>\r\r    </div>\r</body>\r</html>"
+
+#оновлюємо файли HTML
 
 with open(path_end, 'w', encoding="utf-8") as file1:
     file1.write(new_data)
