@@ -1,6 +1,7 @@
 import psycopg2
 import json
 import os
+from operator import itemgetter
 
 from quoteapp.models import Authors, Quotes
 
@@ -15,7 +16,7 @@ path_db = 'dbname=postgres user=postgres password=root'
 
 conn = psycopg2.connect(path_db)
 div_text = ''
-
+count_tegs = {}
 
 with open(path_a, 'r') as json_file:
     data = json.load(json_file)
@@ -52,6 +53,10 @@ with open(path_q, 'r') as json_file:
         for el in item["tags"]:
             temp += el
             temp += ","
+            if el in count_tegs:
+                count_tegs[el] += 1
+            else:
+                count_tegs[el] = 1
         temp = temp[:-1]
         div_text += f"<meta class=\"keywords\" itemprop=\"keywords\" content=\"{temp}\" /    >\r\r"
         for el in item["tags"]:
@@ -60,6 +65,26 @@ with open(path_q, 'r') as json_file:
 
 conn.commit()
 conn.close()
+
+sorted_tags = dict(sorted(count_tegs.items(), key=itemgetter(1), reverse=True))
+new_data = ""
+with open(path_end, 'r') as file1:
+    data = file1.read()
+    new_data = data[:325]
+    new_data += f"\r            <span class=\"tag-item\">\r            <a class=\"tag\" style=\"font-size: 28px\" href=\"/tag/{list(sorted_tags)[0]}/\">{list(sorted_tags)[0]}</a>\r            </span>\r"
+    new_data += f"\r            <span class=\"tag-item\">\r            <a class=\"tag\" style=\"font-size: 26px\" href=\"/tag/{list(sorted_tags)[1]}/\">{list(sorted_tags)[1]}</a>\r            </span>\r"
+    new_data += f"\r            <span class=\"tag-item\">\r            <a class=\"tag\" style=\"font-size: 26px\" href=\"/tag/{list(sorted_tags)[2]}/\">{list(sorted_tags)[2]}</a>\r            </span>\r"
+    new_data += f"\r            <span class=\"tag-item\">\r            <a class=\"tag\" style=\"font-size: 24px\" href=\"/tag/{list(sorted_tags)[3]}/\">{list(sorted_tags)[3]}</a>\r            </span>\r"
+    new_data += f"\r            <span class=\"tag-item\">\r            <a class=\"tag\" style=\"font-size: 22px\" href=\"/tag/{list(sorted_tags)[4]}/\">{list(sorted_tags)[4]}</a>\r            </span>\r"
+    new_data += f"\r            <span class=\"tag-item\">\r            <a class=\"tag\" style=\"font-size: 14px\" href=\"/tag/{list(sorted_tags)[5]}/\">{list(sorted_tags)[5]}</a>\r            </span>\r"
+    new_data += f"\r            <span class=\"tag-item\">\r            <a class=\"tag\" style=\"font-size: 10px\" href=\"/tag/{list(sorted_tags)[6]}/\">{list(sorted_tags)[6]}</a>\r            </span>\r"
+    new_data += f"\r            <span class=\"tag-item\">\r            <a class=\"tag\" style=\"font-size: 8px\" href=\"/tag/{list(sorted_tags)[7]}/\">{list(sorted_tags)[7]}</a>\r            </span>\r"
+    new_data += f"\r            <span class=\"tag-item\">\r            <a class=\"tag\" style=\"font-size: 8px\" href=\"/tag/{list(sorted_tags)[8]}/\">{list(sorted_tags)[8]}</a>\r            </span>\r"
+    new_data += f"\r            <span class=\"tag-item\">\r            <a class=\"tag\" style=\"font-size: 6px\" href=\"/tag/{list(sorted_tags)[9]}/\">{list(sorted_tags)[9]}</a>\r            </span>\r"
+    new_data += "    </div>\r</div>\r\r    </div>\r</body>\r</html>"
+
+with open(path_end, 'w', encoding="utf-8") as file1:
+    file1.write(new_data)
 
 with open(path_middle, 'w', encoding="utf-8") as file1:
     file1.write(div_text)
@@ -75,6 +100,7 @@ with open(path_end, 'r') as file1:
 
 with open(path_html, 'w') as file1:
     file1.write(data)
+
 
 
 
