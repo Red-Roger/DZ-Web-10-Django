@@ -8,11 +8,13 @@ from quoteapp.models import Authors, Quotes
 
 path_a = os.getcwd() + '\\quoteapp\\authors.json'
 path_q = os.getcwd() + '\\quoteapp\\quotes.json'
-path_html = os.getcwd() + '\\quoteapp\\templates\\quoteapp\\main.html'
+path_html = os.getcwd() + '\\quoteapp\\templates\\quoteapp\\index.html'
 path_start = os.getcwd() + '\\quoteapp\\start_page'
 path_end = os.getcwd() + '\\quoteapp\\end_page'
 path_middle = os.getcwd() + '\\quoteapp\\middle_page'
 path_db = 'dbname=postgres user=postgres password=root'
+path_views = os.getcwd() + '\\quoteapp\\views.py'
+path_urls = os.getcwd() + '\\quoteapp\\urls.py'
 
 conn = psycopg2.connect(path_db)
 div_text = ''
@@ -23,6 +25,9 @@ with open(path_a, 'r') as json_file:
     for item in data:
         if not Authors.objects.filter(fullname = item["fullname"]):
             Authors.objects.create (fullname = item["fullname"], born_date = item["born_date"], born_location = item["born_location"], description = item["description"])
+            with open(path_views, 'a', encoding="utf-8") as file1:
+                file1.write(f"\rdef {item["fullname"].replace(" ","").replace(".","")}(request):\r    return render(request, 'quoteapp/author/{item["fullname"]}.html')\r\r")    
+        
         path_about = os.getcwd() + f'\\quoteapp\\templates\\quoteapp\\author\\{item["fullname"]}.html'
         about_text = f"<div class=\"author-details\">\r    <h3 class=\"author-title\">{item["fullname"]}</h3>\r"
         about_text += f"    <p><strong>Born:</strong> <span class=\"author-born-date\">{item["born_date"]}</span> <span class=\"author-born-location\">{item["born_location"]}</span></p>\r"
