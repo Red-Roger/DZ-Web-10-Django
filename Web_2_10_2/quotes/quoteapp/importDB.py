@@ -103,5 +103,7 @@ with open(path_middle, 'r') as file1:
 with open(path_end, 'r') as file1:
     data += file1.read()
 
+
 with open(path_html, 'w') as file1:
     file1.write(data)
+
